@@ -14,6 +14,10 @@ namespace Movement {
 		void DoAction (string eventType, object[] info);
 	}
 
+	public interface IColliding {
+		void DoOnCollision(Collider2D colliderHit);
+	}
+
 	public abstract class IMovementModifier : MonoBehaviour 
 	{
 		private List<IMovementModifierListener> listeners = new List<IMovementModifierListener>();
@@ -54,6 +58,8 @@ namespace Movement {
 		public bool Top;
 		public bool Bottom;
 
+		public List<Collider2D> CollidersHit = new List<Collider2D>();
+
 		public bool HasCollision() {
 			return Bottom || Top || Right || Left;
 		}
@@ -63,6 +69,7 @@ namespace Movement {
 			Left = false;
 			Top = false;
 			Bottom = false;
+			CollidersHit.Clear ();
 		}
 
 		public void Set(CollisionState2D collisionState) {
@@ -70,6 +77,7 @@ namespace Movement {
 			this.Left = collisionState.Left;
 			this.Top = collisionState.Top;
 			this.Bottom = collisionState.Bottom;
+			this.CollidersHit = collisionState.CollidersHit;
 		}
 	}
 
@@ -120,6 +128,7 @@ namespace Movement {
 		private RaycastHit2D _raycastHit;
 		private Vector2 _lastPosition;
 		private List<IMovementModifier> _movements;
+		private List<IColliding> _collisionHandlers;
 
 		private RayCastOrigins _oldRayCastOrigins;
 
@@ -149,6 +158,7 @@ namespace Movement {
 		    _collider2D = GetComponent<BoxCollider2D> ();
 
 			_movements = new List<IMovementModifier> ();
+			_collisionHandlers = GetComponentsInChildren<IColliding> ().ToList ();
 
 			if (string.IsNullOrEmpty (InitialState)) {
 				_movements.AddRange (GetComponentsInChildren<IMovementModifier> ().ToList ());
@@ -178,9 +188,10 @@ namespace Movement {
 				PreMove ();
 				Move ();
 				PostMove ();
+				HandleCollisions ();
 			}
 		}			
-
+			
 		private void Move() {
 		
 			if (!Mathf.Approximately (deltaMovement.x, 0f) || !Mathf.Approximately (deltaMovement.y, 0f)) {
@@ -220,6 +231,27 @@ namespace Movement {
 			if (Mathf.Abs(Velocity.y) < 0.001f)
 				Velocity.y = 0f;
 
+		}
+
+
+		public void HandleCollisions() {
+			for(int i = 0; i < _collisionState.CollidersHit.Count; i++) {
+				var colliderHit = _collisionState.CollidersHit [i];
+
+				for (int j = 0; j < _collisionHandlers.Count; j++) {
+					IColliding collisionHandler = _collisionHandlers[j];
+
+					collisionHandler.DoOnCollision (colliderHit);
+				}	
+
+				var otherCollider = colliderHit.GetComponent<IColliding> ();
+
+				if(otherCollider != null) {
+					otherCollider.DoOnCollision (_collider2D);
+				}
+			}
+
+			_collisionState.CollidersHit.Clear ();
 		}
 
 		public void ChangeState(string[] states) {
@@ -321,6 +353,9 @@ namespace Movement {
 						_collisionState.Left = true;
 					}
 
+					if(!_collisionState.CollidersHit.Contains (_raycastHit.collider)) {
+						_collisionState.CollidersHit.Add (_raycastHit.collider);
+					}
 				}
 			}				
 		}
@@ -358,6 +393,10 @@ namespace Movement {
 						deltaMovement.y += SkinWidth;
 						_collisionState.Bottom = true;
 					}
+
+					if(!_collisionState.CollidersHit.Contains (_raycastHit.collider)) {
+						_collisionState.CollidersHit.Add (_raycastHit.collider);
+					}
 				}
 			}
 		}			
@@ -380,6 +419,10 @@ namespace Movement {
 					for (int i = 0; i < hits; i++) {
 						if (Hits [i].fraction < fraction) {
 							fraction = Hits [i].fraction;
+						}
+
+						if(!_collisionState.CollidersHit.Contains (Hits[i].collider)) {
+							_collisionState.CollidersHit.Add (Hits[i].collider);
 						}
 					}
 				}
@@ -409,8 +452,12 @@ namespace Movement {
 
 			if (hits > 0) {
 				for (int i = 0; i < hits; i++) {			
-					Debug.Log (_lastPosition + (delta * Hits [i].fraction));
+					
 					transform.position = _lastPosition + (delta * Hits [i].fraction);
+
+					if(!_collisionState.CollidersHit.Contains (Hits[i].collider)) {
+						_collisionState.CollidersHit.Add (Hits[i].collider);
+					}
 				}
 
 				AdjustTransformForSkinWidth (delta);

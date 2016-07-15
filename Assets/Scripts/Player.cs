@@ -11,7 +11,7 @@ namespace Asterlike {
 		void DoOnThrottleDown();
 	}
 		
-	public class Player : IMovementModifier, IInputResponding {
+	public class Player : IMovementModifier, IInputResponding, IColliding {
 		
 		public const float MIN_VELOCITY_FOR_ROTATION = 0.1f;
 
@@ -21,9 +21,14 @@ namespace Asterlike {
 		private Weapon _weapon;
 
 		private Transform _bulletSpawnPoint;
+		private bool _isDead = false;
 
 		[Header("Player Sprite")]
 		public NumericSpring RotateSpring;
+
+		[Header("Attributes")]
+		public float RespawnTime = 1f;
+		public Transform RespawnPoint;
 
 		#region UnityMethods
 
@@ -46,7 +51,7 @@ namespace Asterlike {
 			InputHandler.CheckForInput (this);
 
 		}
-			
+					
 		#endregion
 
 		private T GetComponentOnSpecificChild<T>(string childName) where T : Component {
@@ -89,11 +94,61 @@ namespace Asterlike {
 
 		}
 
+		public void HandleCollisionWithBullet(Collider2D bulletCollider) {
+
+			if(!_isDead) {
+				DestroyShip ();
+			}
+
+		}
+
+		public void DestroyShip() {
+
+			_isDead = true;
+
+			_sprite.enabled = false;
+
+			CharacterController.IsEnabled = false;
+
+			CharacterController.Velocity = new Vector2 ();
+
+			StartCoroutine (WaitThenRespawn ());
+
+		}
+
+		public void RespawnShip() {
+
+			_isDead = false;
+
+			_sprite.enabled = true;
+
+			CharacterController.IsEnabled = true;
+
+			CharacterController.TranslateAndIgnoreCollision (RespawnPoint.position);
+
+		}
+
+		private IEnumerator WaitThenRespawn() {
+			yield return new WaitForSeconds (RespawnTime);
+			_isDead = false;
+			RespawnShip ();
+		}
+
+		#region IColliding implementation 
+
+		public void DoOnCollision(Collider2D colliderHit) {
+			if(colliderHit.tag.Equals ("Bullet")) {
+				HandleCollisionWithBullet (colliderHit);
+			}	
+		}
+
+		#endregion
 			
 		#region implemented abstract members of IMovementModifier
 
+
 		public override void Do() {
-			
+				
 		}
 
 		#endregion

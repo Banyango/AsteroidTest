@@ -30,9 +30,7 @@ namespace Asterlike {
 
 			var normalizedVelocity = CharacterController.Velocity.normalized;
 
-
 			var angle = Mathf.Atan2 (normalizedVelocity.y, normalizedVelocity.x) * Mathf.Rad2Deg;
-
 
 			_sprite.localRotation = Quaternion.Euler(new Vector3(0, 0, angle));
 
