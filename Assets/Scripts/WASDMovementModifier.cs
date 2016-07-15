@@ -31,7 +31,7 @@ namespace Asterlike {
 
 		public void Update() {
 
-			ResetMovementBool ();
+			ResetMovementVector ();
 
 			InputHandler.CheckForInput(this);
 
@@ -58,11 +58,11 @@ namespace Asterlike {
 			_thrustCurveIndex = Mathf.Clamp (_thrustCurveIndex, 0 , ForwardsThrustForce.keys[ForwardsThrustForce.length-1].time);
 		}
 
-		bool IsThrustingInAnyDirection() {
+		private bool IsThrustingInAnyDirection() {
 			return Mathf.Abs(_thrustDirection.x) > MIN_THRUST_VELOCITY || Mathf.Abs(_thrustDirection.y) > MIN_THRUST_VELOCITY;
 		}
 
-		private void ResetMovementBool() {
+		private void ResetMovementVector() {
 			_thrustDirection = new Vector2 ();
 		}
 

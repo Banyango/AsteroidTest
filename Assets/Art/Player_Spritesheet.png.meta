@@ -1,6 +1,6 @@
 fileFormatVersion: 2
 guid: 850ed65d66a314659925c11e00d3e370
-timeCreated: 1468531982
+timeCreated: 1468564117
 licenseType: Pro
 TextureImporter:
   fileIDToRecycleName:
@@ -57,19 +57,20 @@ TextureImporter:
       rect:
         serializedVersion: 2
         x: 3
-        y: 222
+        y: 218
         width: 35
-        height: 32
+        height: 36
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline:
-      - - {x: -7.5, y: 16}
-        - {x: -17.5, y: -2}
-        - {x: -17.5, y: -16}
-        - {x: 17.5, y: -16}
-        - {x: 17.5, y: -4}
-        - {x: 5.5, y: 16}
+      - - {x: 16.5, y: 6}
+        - {x: -3.5, y: 18}
+        - {x: -17.5, y: 18}
+        - {x: -17.5, y: -18}
+        - {x: -4.5, y: -18}
+        - {x: 17.5, y: -7}
+        - {x: 17.5, y: 4}
     - name: Bullet_Frame0
       rect:
         serializedVersion: 2
@@ -84,10 +85,10 @@ TextureImporter:
     - name: Bullet_Frame1
       rect:
         serializedVersion: 2
-        x: 90
-        y: 221
-        width: 12
-        height: 32
+        x: 88
+        y: 233
+        width: 31
+        height: 12
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}

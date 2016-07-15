@@ -10,14 +10,17 @@ namespace Asterlike {
 		void DoOnShoot();
 		void DoOnThrottleDown();
 	}
-
-	public class Player : IMovementModifier {
+		
+	public class Player : IMovementModifier, IInputResponding {
 		
 		public const float MIN_VELOCITY_FOR_ROTATION = 0.1f;
 
 		public IInputManager InputHandler;
 
 		private SpriteRenderer _sprite;
+		private Weapon _weapon;
+
+		private Transform _bulletSpawnPoint;
 
 		[Header("Player Sprite")]
 		public NumericSpring RotateSpring;
@@ -27,13 +30,21 @@ namespace Asterlike {
 		public void Start() {
 			
 			_sprite = GetComponentOnSpecificChild<SpriteRenderer> ("Sprite");
+			_bulletSpawnPoint = GetComponentOnSpecificChild<Transform> ("Sprite/BulletSpawningPoint");
+			_weapon = GetComponent<Weapon> ();
+
+			InputHandler = GetComponent<IInputManager> ();
 
 			RotateSpring.value = 0;
 
 		}	
 
 		public void Update() {
+
 			RotateSprite ();
+
+			InputHandler.CheckForInput (this);
+
 		}
 			
 		#endregion
@@ -77,10 +88,31 @@ namespace Asterlike {
 			}
 
 		}
+
 			
 		#region implemented abstract members of IMovementModifier
 
 		public override void Do() {
+			
+		}
+
+		#endregion
+
+		#region IInputResponding implementation
+
+		public void DoOnThrottleUp() {
+			
+		}
+
+		public void DoOnTurn(bool isLeft) {
+			
+		}
+
+		public void DoOnShoot() {
+			_weapon.ShootBullet (_bulletSpawnPoint.position, CharacterController.Velocity);	
+		}
+
+		public void DoOnThrottleDown() {
 			
 		}
 
