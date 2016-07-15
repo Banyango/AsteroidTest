@@ -20,7 +20,7 @@ namespace Asterlike {
 		private SpriteRenderer _sprite;
 
 		[Header("Player Sprite")]
-		public NumericSpring ThrustSpring;
+		public NumericSpring RotateSpring;
 
 		#region UnityMethods
 
@@ -28,7 +28,7 @@ namespace Asterlike {
 			
 			_sprite = GetComponentOnSpecificChild<SpriteRenderer> ("Sprite");
 
-			ThrustSpring.value = 0;
+			RotateSpring.value = 0;
 
 		}	
 
@@ -59,11 +59,32 @@ namespace Asterlike {
 
 				var angle = Mathf.Atan2 (normalizedVelocity.y, normalizedVelocity.x) * Mathf.Rad2Deg;
 
-				_sprite.transform.localRotation = Quaternion.Euler(new Vector3(0, 0, angle));
+				if(angle < 0f) {
+					angle += 2 * Mathf.PI * Mathf.Rad2Deg; 
+				}
+								
+				if(angle - RotateSpring.value > (Mathf.PI * Mathf.Rad2Deg)) { 
+					RotateSpring.value = 2 * Mathf.PI * Mathf.Rad2Deg;
+				} else if(angle - RotateSpring.value < -(Mathf.PI * Mathf.Rad2Deg)) {
+					RotateSpring.value = 0;
+				}
+
+				RotateSpring.SetTarget (angle);
+
+				RotateSpring.Update (Time.deltaTime);
+
+				_sprite.transform.localRotation = Quaternion.Euler(new Vector3(0, 0, RotateSpring.value));
 			}
 
 		}
 			
+		#region implemented abstract members of IMovementModifier
+
+		public override void Do() {
+			
+		}
+
+		#endregion
 	}
 }
 
