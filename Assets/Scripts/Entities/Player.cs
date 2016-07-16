@@ -24,7 +24,6 @@ namespace Asterlike {
 		private SpriteRenderer _sprite;
 		private Weapon _weapon;
 		private WallType _wallCollisionBehaviour;
-		private WallLogicHandler _wallLogicHandler = new WallLogicHandler();
 
 		private Transform _bulletSpawnPoint;
 		private bool _isDead = false;
@@ -112,7 +111,39 @@ namespace Asterlike {
 		}
 
 		private void HandleCollisionWithWall(CollisionHit2D colliderHit) {
-			_wallLogicHandler.Handle (_wallCollisionBehaviour, CharacterController, colliderHit, transform);			
+			const float ScreenBoundsTop = .9f;
+			const float ScreenBoundsBottom = .1f;
+			switch (_wallCollisionBehaviour) {
+			case WallType.WALL:
+				// do nothing.
+				break;
+			case WallType.BOUNCE:				 				
+				CharacterController.Velocity = Vector2.Reflect(CharacterController.Velocity, colliderHit.normal);   
+				break;
+			case WallType.WRAP:				
+
+				var hitPoint = colliderHit.point;
+
+				var position = Camera.main.WorldToViewportPoint (hitPoint);
+
+				var newPosition = Camera.main.WorldToViewportPoint (transform.position);
+
+				if(position.x >= ScreenBoundsTop) {
+					newPosition.x = ScreenBoundsBottom;
+				} else if(position.x <= ScreenBoundsBottom) {
+					newPosition.x = ScreenBoundsTop;
+				}
+
+				if(position.y >= ScreenBoundsTop) {
+					newPosition.y = ScreenBoundsBottom;
+				} else if(position.y <= ScreenBoundsBottom) {
+					newPosition.y = ScreenBoundsTop;
+				}
+
+				CharacterController.TranslateAndIgnoreCollision (Camera.main.ViewportToWorldPoint(newPosition));
+
+				break;
+			}
 		}
 
 		public void SetWallCollisionBehaviour(WallType type) {
@@ -171,6 +202,16 @@ namespace Asterlike {
 
 			_weapon = gameObject.AddComponent<T> ();
 
+		}
+
+		public void ChangeToWASDMovement() {
+			GetComponent<WASDMovementModifier> ().IsEnabled = true;
+			GetComponent<AsteroidsLikeMovementModifier> ().IsEnabled = false;
+		}
+
+		public void ChangeToAsterlikeMovement() {
+			GetComponent<WASDMovementModifier> ().IsEnabled = false;
+			GetComponent<AsteroidsLikeMovementModifier> ().IsEnabled = true;
 		}
 
 		#region IColliding implementation 

@@ -13,7 +13,6 @@ namespace Asterlike {
 		private Transform _sprite;
 
 		private WallType _wallCollisionBehaviour;
-		private WallLogicHandler _wallLogicHandler = new WallLogicHandler();
 
 		#region Unity Methods
 
@@ -31,6 +30,8 @@ namespace Asterlike {
 
 		public void SetDirection(Vector2 direction) {
 			_velocity = Speed * direction.normalized;
+
+
 		}
 
 		private void RotateSprite() {
@@ -63,7 +64,41 @@ namespace Asterlike {
 		#endregion
 
 		private void HandleCollisionWithWall(CollisionHit2D colliderHit) {
-			_wallLogicHandler.Handle (_wallCollisionBehaviour, CharacterController, colliderHit, transform);	
+
+			const float ScreenBoundsTop = .9f;
+			const float ScreenBoundsBottom = .1f;
+
+			switch (_wallCollisionBehaviour) {
+			case WallType.WALL:
+				// do nothing.
+				break;
+			case WallType.BOUNCE:				 				
+				_velocity = Vector2.Reflect(_velocity, colliderHit.normal);   
+				break;
+			case WallType.WRAP:				
+
+				var hitPoint = colliderHit.point;
+
+				var position = Camera.main.WorldToViewportPoint (hitPoint);
+
+				var newPosition = Camera.main.WorldToViewportPoint (transform.position);
+
+				if(position.x >= ScreenBoundsTop) {
+					newPosition.x = ScreenBoundsBottom;
+				} else if(position.x <= ScreenBoundsBottom) {
+					newPosition.x = ScreenBoundsTop;
+				}
+
+				if(position.y >= ScreenBoundsTop) {
+					newPosition.y = ScreenBoundsBottom;
+				} else if(position.y <= ScreenBoundsBottom) {
+					newPosition.y = ScreenBoundsTop;
+				}
+
+				CharacterController.TranslateAndIgnoreCollision (Camera.main.ViewportToWorldPoint(newPosition));
+
+				break;
+			}
 		}
 
 		#region IWallTypeListener implementation
