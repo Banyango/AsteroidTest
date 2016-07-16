@@ -24,6 +24,10 @@ namespace Asterlike {
 			wall.SetWallCollisionBehaviour (_currentType);
 		}
 
+		public void UnRegisterWallListener(IWallTypeListening wall) {
+			listeners.Remove (wall);
+		}
+
 		public void OnWallToggleSelected(string type) {
 			for(int i = 0; i < listeners.Count; i++) {
 				IWallTypeListening listener = listeners [i];

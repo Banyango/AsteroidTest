@@ -15,7 +15,15 @@ namespace Asterlike {
 			
 			var vector = _velocity;
 
-			vector = vector + ((Vector2)transform.up) * Mathf.Sin (Time.time * Frequency) * Scale;
+			var axis = Vector2.up;
+
+			var angleBetweenUpAndVelocity = Mathf.Abs (Vector2.Angle (_velocity, Vector2.up));
+
+			if(angleBetweenUpAndVelocity < 35 || angleBetweenUpAndVelocity > 125) {
+				axis = Vector2.right;
+			}
+
+			vector = vector + axis * Mathf.Sin (Time.time * Frequency) * Scale;
 
 			CharacterController.Velocity = vector;
 		}

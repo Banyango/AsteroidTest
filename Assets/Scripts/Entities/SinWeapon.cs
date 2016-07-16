@@ -8,6 +8,9 @@ namespace Asterlike {
 
 		public string PrefabName = "SinWaveBullet";
 
+		[HideInInspector]
+		public float minDirectionMagnitude = 0.1f;
+
 		#region UnityMethods
 
 		public void Start() {
@@ -23,7 +26,7 @@ namespace Asterlike {
 
 			var sinBullet = bulletGameObject.GetComponent<SinWaveBullet> ();
 
-			sinBullet.SetDirection (Vector2.Min(direction, (direction * 10).normalized));
+			sinBullet.SetDirection (direction);
 		}
 
 		#endregion

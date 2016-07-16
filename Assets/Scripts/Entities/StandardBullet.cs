@@ -26,12 +26,18 @@ namespace Asterlike {
 			RotateSprite ();
 		}
 
+		public void Destroy() {
+			var wallTypeController = GameObject.FindObjectOfType<WallTypeController> ();
+
+			if(wallTypeController != null) {
+				wallTypeController.UnRegisterWallListener (this);
+			}
+		}
+
 		#endregion
 
 		public void SetDirection(Vector2 direction) {
 			_velocity = Speed * direction.normalized;
-
-
 		}
 
 		private void RotateSprite() {

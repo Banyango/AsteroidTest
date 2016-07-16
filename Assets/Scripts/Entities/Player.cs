@@ -21,8 +21,9 @@ namespace Asterlike {
 
 		public IInputManager InputHandler;
 
-		private SpriteRenderer _sprite;
 		private Weapon _weapon;
+		private SpriteRenderer _sprite;
+		private ParticleSystem _particle;
 		private WallType _wallCollisionBehaviour;
 
 		private Transform _bulletSpawnPoint;
@@ -34,6 +35,7 @@ namespace Asterlike {
 		[Header("Attributes")]
 		public float RespawnTime = 1f;
 		public Transform RespawnPoint;
+		public LayerMask BulletLayerMask;
 
 		#region UnityMethods
 
@@ -42,6 +44,7 @@ namespace Asterlike {
 			_weapon = GetComponent<Weapon> ();
 
 			_sprite = GetComponentOnSpecificChild<SpriteRenderer> ("Sprite");
+			_particle = GetComponentOnSpecificChild<ParticleSystem> ("Particle");
 			_bulletSpawnPoint = GetComponentOnSpecificChild<Transform> ("Sprite/BulletSpawningPoint");
 
 			InputHandler = GetComponent<IInputManager> ();
@@ -156,6 +159,8 @@ namespace Asterlike {
 
 			_sprite.enabled = false;
 
+			_particle.Play ();
+
 			CharacterController.IsEnabled = false;
 
 			CharacterController.Velocity = new Vector2 ();
@@ -167,6 +172,21 @@ namespace Asterlike {
 		public void RespawnShip() {
 
 			_isDead = false;
+
+			_particle.Clear ();
+
+			Collider2D[] overlapping = Physics2D.OverlapAreaAll (
+				CharacterController.Collider.bounds.min,
+				CharacterController.Collider.bounds.max,
+				BulletLayerMask.value);
+
+			if(overlapping.Length > 0) {
+				for(int i = 0; i < overlapping.Length; i++) {
+					var overlappingCollider = overlapping [i];
+
+					Destroy (overlappingCollider.gameObject);
+				}
+			}
 
 			_sprite.enabled = true;
 
@@ -230,7 +250,6 @@ namespace Asterlike {
 			
 		#region implemented abstract members of IMovementModifier
 
-
 		public override void Do() {
 				
 		}
@@ -248,7 +267,7 @@ namespace Asterlike {
 		}
 
 		public void DoOnShoot() {
-			_weapon.ShootBullet (_bulletSpawnPoint.position, CharacterController.Velocity);	
+			_weapon.ShootBullet (_bulletSpawnPoint.position, _sprite.transform.localRotation * Vector2.right);	
 		}
 
 		public void DoOnThrottleDown() {
