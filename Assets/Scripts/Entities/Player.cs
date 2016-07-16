@@ -10,8 +10,12 @@ namespace Asterlike {
 		void DoOnShoot();
 		void DoOnThrottleDown();
 	}
+
+	public interface IWallTypeListening {
+		void SetWallCollisionBehaviour(WallType type);
+	}
 		
-	public class Player : IMovementModifier, IInputResponding, IColliding {
+	public class Player : IMovementModifier, IInputResponding, IColliding, IWallTypeListening {
 		
 		public const float MIN_VELOCITY_FOR_ROTATION = 0.1f;
 
@@ -19,6 +23,8 @@ namespace Asterlike {
 
 		private SpriteRenderer _sprite;
 		private Weapon _weapon;
+		private WallType _wallCollisionBehaviour;
+		private WallLogicHandler _wallLogicHandler = new WallLogicHandler();
 
 		private Transform _bulletSpawnPoint;
 		private bool _isDead = false;
@@ -34,13 +40,16 @@ namespace Asterlike {
 
 		public void Start() {
 			
+			_weapon = GetComponent<Weapon> ();
+
 			_sprite = GetComponentOnSpecificChild<SpriteRenderer> ("Sprite");
 			_bulletSpawnPoint = GetComponentOnSpecificChild<Transform> ("Sprite/BulletSpawningPoint");
-			_weapon = GetComponent<Weapon> ();
 
 			InputHandler = GetComponent<IInputManager> ();
 
 			RotateSpring.value = 0;
+
+			GameObject.FindObjectOfType<WallTypeController> ().RegisterWallListener (this);
 
 		}	
 
@@ -94,12 +103,20 @@ namespace Asterlike {
 
 		}
 
-		public void HandleCollisionWithBullet(Collider2D bulletCollider) {
+		private void HandleCollisionWithBullet(CollisionHit2D bulletCollider) {
 
 			if(!_isDead) {
 				DestroyShip ();
 			}
 
+		}
+
+		private void HandleCollisionWithWall(CollisionHit2D colliderHit) {
+			_wallLogicHandler.Handle (_wallCollisionBehaviour, CharacterController, colliderHit, transform);			
+		}
+
+		public void SetWallCollisionBehaviour(WallType type) {
+			_wallCollisionBehaviour = type;				
 		}
 
 		public void DestroyShip() {
@@ -134,12 +151,38 @@ namespace Asterlike {
 			RespawnShip ();
 		}
 
+		public void ChangeWeapon(string type) {
+			switch (type) {
+			case "SIN": 
+				ChangeWeapon<SinWeapon> ();
+				break;
+			case "STANDARD":
+				ChangeWeapon<StandardWeapon> ();
+				break;
+			default:
+				Debug.LogError ("Weapon type string not recognized " + type);
+				break;
+			}
+		}
+
+		public void ChangeWeapon<T>() where T : Weapon {
+
+			DestroyImmediate (_weapon);
+
+			_weapon = gameObject.AddComponent<T> ();
+
+		}
+
 		#region IColliding implementation 
 
-		public void DoOnCollision(Collider2D colliderHit) {
-			if(colliderHit.tag.Equals ("Bullet")) {
+		public void DoOnCollision(CollisionHit2D colliderHit) {
+			if(colliderHit.collider.tag.Equals ("Bullet")) {
 				HandleCollisionWithBullet (colliderHit);
-			}	
+			}
+
+			if(colliderHit.collider.tag.Equals ("MainCamera")) {
+				HandleCollisionWithWall (colliderHit);
+			}
 		}
 
 		#endregion

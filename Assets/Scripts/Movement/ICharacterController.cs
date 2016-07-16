@@ -15,7 +15,7 @@ namespace Movement {
 	}
 
 	public interface IColliding {
-		void DoOnCollision(Collider2D colliderHit);
+		void DoOnCollision(CollisionHit2D colliderHit);
 	}
 
 	public abstract class IMovementModifier : MonoBehaviour 
@@ -50,6 +50,12 @@ namespace Movement {
 		Right,Left,Top,Bottom
 	}
 
+	public struct CollisionHit2D {
+		public Collider2D collider;
+		public Vector2 normal;
+		public Vector2 point;
+	}
+
 	[Serializable]
 	public class CollisionState2D
 	{
@@ -58,7 +64,7 @@ namespace Movement {
 		public bool Top;
 		public bool Bottom;
 
-		public List<Collider2D> CollidersHit = new List<Collider2D>();
+		public List<CollisionHit2D> CollidersHit = new List<CollisionHit2D>();
 
 		public bool HasCollision() {
 			return Bottom || Top || Right || Left;
@@ -147,6 +153,12 @@ namespace Movement {
 		public ICharacterController RunAfter;
 
 		public float SkinWidth;
+
+		public BoxCollider2D Collider {
+			get {
+				return _collider2D;
+			}
+		}
 
 		public CollisionState2D CollisionState {
 			get {
@@ -244,10 +256,17 @@ namespace Movement {
 					collisionHandler.DoOnCollision (colliderHit);
 				}	
 
-				var otherCollider = colliderHit.GetComponent<IColliding> ();
+				var otherCollider = colliderHit.collider.GetComponent<IColliding> ();
 
 				if(otherCollider != null) {
-					otherCollider.DoOnCollision (_collider2D);
+
+					CollisionHit2D hit = new CollisionHit2D ();
+
+					hit.collider = _collider2D;
+					hit.normal = colliderHit.normal;
+					hit.point = colliderHit.point;
+
+					otherCollider.DoOnCollision (hit);
 				}
 			}
 
@@ -353,11 +372,21 @@ namespace Movement {
 						_collisionState.Left = true;
 					}
 
-					if(!_collisionState.CollidersHit.Contains (_raycastHit.collider)) {
-						_collisionState.CollidersHit.Add (_raycastHit.collider);
+					if(!_collisionState.CollidersHit.Any((e)=> e.collider.Equals(_raycastHit.collider))) {
+						_collisionState.CollidersHit.Add (CreateCollisionHit2D(_raycastHit));
 					}
 				}
 			}				
+		}
+
+		private CollisionHit2D CreateCollisionHit2D(RaycastHit2D raycastHit) {
+			CollisionHit2D hit = new CollisionHit2D ();
+
+			hit.collider = raycastHit.collider;
+			hit.normal = raycastHit.normal;
+			hit.point = raycastHit.point;
+
+			return hit;
 		}
 
 		private void MoveVertically () {
@@ -394,9 +423,10 @@ namespace Movement {
 						_collisionState.Bottom = true;
 					}
 
-					if(!_collisionState.CollidersHit.Contains (_raycastHit.collider)) {
-						_collisionState.CollidersHit.Add (_raycastHit.collider);
+					if(!_collisionState.CollidersHit.Any((e)=> e.collider.Equals(_raycastHit.collider))) {
+						_collisionState.CollidersHit.Add (CreateCollisionHit2D(_raycastHit));
 					}
+
 				}
 			}
 		}			
@@ -421,8 +451,8 @@ namespace Movement {
 							fraction = Hits [i].fraction;
 						}
 
-						if(!_collisionState.CollidersHit.Contains (Hits[i].collider)) {
-							_collisionState.CollidersHit.Add (Hits[i].collider);
+						if(!_collisionState.CollidersHit.Any((e)=> e.collider.Equals(Hits[i].collider))) {
+							_collisionState.CollidersHit.Add (CreateCollisionHit2D(Hits[i]));
 						}
 					}
 				}
@@ -455,9 +485,10 @@ namespace Movement {
 					
 					transform.position = _lastPosition + (delta * Hits [i].fraction);
 
-					if(!_collisionState.CollidersHit.Contains (Hits[i].collider)) {
-						_collisionState.CollidersHit.Add (Hits[i].collider);
+					if(!_collisionState.CollidersHit.Any((e)=> e.collider.Equals(Hits[i].collider))) {
+						_collisionState.CollidersHit.Add (CreateCollisionHit2D(Hits[i]));
 					}
+
 				}
 
 				AdjustTransformForSkinWidth (delta);
@@ -511,6 +542,7 @@ namespace Movement {
 
 			transform.position = skinAdjust;
 		}
+			
 	}
 
 		
