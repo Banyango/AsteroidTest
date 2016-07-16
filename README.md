@@ -31,10 +31,12 @@ Using a radio button, you can toggle between two bullet types: Standard, and Wav
 At run time, the player can change the number of seconds before the ship respawns through a text entry or radio button selector.
 
 Assets:
-Use a white triangle primitive for the ship
-Spawn a white cylinder for your bullets
-Leave the background black
+
+- Use a white triangle primitive for the ship
+- Spawn a white cylinder for your bullets
+- Leave the background black
+
 Implementation Guidelines:
-Don’t hard code systems. 
-Use clean architecture such that it would be easy to make changes and/or add features in the future. 
+- Don’t hard code systems. 
+- Use clean architecture such that it would be easy to make changes and/or add features in the future. 
 
