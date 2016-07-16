@@ -91,9 +91,9 @@ namespace Asterlike {
 			_isTurning = true;
 
 			if(isLeft) {
-				_turnDirection = -1f;
-			} else {
 				_turnDirection = 1f;
+			} else {
+				_turnDirection = -1f;
 			}
 		}
 
