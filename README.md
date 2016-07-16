@@ -4,9 +4,9 @@ Create the foundation for an Asteroids-like game by following the spec below exa
 
 Some notes:
 
-The Bullet classes use inheritance to extend the standard bullet behaviour. I would probably switch that up to composition if there were lots of bullet types planned.
-The ICharacterController is a class I wrote before this test. It is a heavily modified version of Prime31's Character controller. There were a number of issues with the original controller. The biggest being that TK2D collision generates line colliders and with the raycasting method you can pass through the wall in one timestep. Be inside on the collision test and not collide with anything, thereby falling through a surface. I added box casting, where you more or less do a sweep test between the old point and new point. And set the collider back if there is a tunnel detected. I also added the concept of IMovementModifiers which are bits of logic that you can use to move an object around that can be enabled and disabled when needed. It allows for clean fine grained control when you have state changes on an object. I also added with this test the collision callback handling.
-I've included an extra way to move around. I felt that it was more fun with WASD boosting you in certain directions
+- The Bullet classes use inheritance to extend the standard bullet behaviour. I would probably switch that up to composition if there were lots of bullet types planned.
+- The ICharacterController is a class I wrote before this test. It is a heavily modified version of Prime31's Character controller. There were a number of issues with the original controller. The biggest being that TK2D collision generates line colliders and with the raycasting method you can pass through the wall in one timestep. Be inside on the collision test and not collide with anything, thereby falling through a surface. I added box casting, where you more or less do a sweep test between the old point and new point. And set the collider back if there is a tunnel detected. I also added the concept of IMovementModifiers which are bits of logic that you can use to move an object around that can be enabled and disabled when needed. It allows for clean fine grained control when you have state changes on an object. I also added with this test the collision callback handling.
+- I've included an extra way to move around. I felt that it was more fun with WASD boosting you in certain directions
 
 
 Features:
